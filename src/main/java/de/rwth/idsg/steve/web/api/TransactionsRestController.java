@@ -95,14 +95,22 @@ public class TransactionsRestController {
     @GetMapping("/{transactionPk}")
     public TransactionDetails getDetails(@PathVariable("transactionPk") int transactionPk) {
         log.debug("Read transaction details request: {}", transactionPk);
-        return transactionRepository.getDetails(transactionPk);
+        try {
+            return transactionRepository.getDetails(transactionPk);
+        } catch (SteveException e) {
+            throw new SteveException.NotFound(e.getMessage());
+        }
     }
 
     @PostMapping("/{transactionPk}/stop")
     public TransactionDetails stop(@PathVariable("transactionPk") int transactionPk) {
         log.debug("Stop transaction request: {}", transactionPk);
         transactionStopService.stop(transactionPk);
-        return transactionRepository.getDetails(transactionPk);
+        try {
+            return transactionRepository.getDetails(transactionPk);
+        } catch (SteveException e) {
+            throw new SteveException.NotFound(e.getMessage());
+        }
     }
 
     @GetMapping("/metadata")

@@ -1,5 +1,25 @@
+/*
+ * SteVe - SteckdosenVerwaltung - https://github.com/steve-community/steve
+ * Copyright (C) 2013-2025 SteVe Community Team
+ * All Rights Reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package de.rwth.idsg.steve.web.api;
 
+import de.rwth.idsg.steve.SteveException;
 import de.rwth.idsg.steve.ocpp.OcppProtocol;
 import de.rwth.idsg.steve.ocpp.OcppVersion;
 import de.rwth.idsg.steve.repository.ChargePointRepository;
@@ -70,9 +90,13 @@ public class ChargePointsRestController {
 
     @GetMapping("/{chargeBoxPk}")
     public ChargePointDetailsResponse getChargePoint(@PathVariable("chargeBoxPk") int chargeBoxPk) {
-        ChargePoint.Details details = chargePointRepository.getDetails(chargeBoxPk);
-        List<String> registrationStatusList = getRegistrationStatusList(details.getChargeBox());
-        return ChargePointDetailsResponse.of(details, registrationStatusList);
+        try {
+            ChargePoint.Details details = chargePointRepository.getDetails(chargeBoxPk);
+            List<String> registrationStatusList = getRegistrationStatusList(details.getChargeBox());
+            return ChargePointDetailsResponse.of(details, registrationStatusList);
+        } catch (SteveException e) {
+            throw new SteveException.NotFound(e.getMessage());
+        }
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -81,8 +105,12 @@ public class ChargePointsRestController {
         log.debug("Create charge point request: {}", form);
         int chargeBoxPk = chargePointRepository.addChargePoint(form);
         chargePointRegistrationService.removeUnknown(Collections.singletonList(form.getChargeBoxId()));
-        ChargePoint.Details details = chargePointRepository.getDetails(chargeBoxPk);
-        return ChargePointDetailsResponse.of(details, getRegistrationStatusList(details.getChargeBox()));
+        try {
+            ChargePoint.Details details = chargePointRepository.getDetails(chargeBoxPk);
+            return ChargePointDetailsResponse.of(details, getRegistrationStatusList(details.getChargeBox()));
+        } catch (SteveException e) {
+            throw new SteveException.NotFound(e.getMessage());
+        }
     }
 
     @PutMapping(value = "/{chargeBoxPk}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -143,7 +171,6 @@ public class ChargePointsRestController {
         List<String> unknown = getUnknownChargeBoxIds();
         return new ChargePointMetadataResponse(
             ControllerHelper.COUNTRY_DROPDOWN,
-            UP_TO_OCPP15_REGISTRATION_STATUS_LIST,
             OCPP16_REGISTRATION_STATUS_LIST,
             UP_TO_OCPP15_REGISTRATION_STATUS_LIST,
             unknown

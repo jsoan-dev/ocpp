@@ -19,8 +19,13 @@
 package de.rwth.idsg.steve.web.api;
 
 import de.rwth.idsg.steve.SteveException;
+import de.rwth.idsg.steve.repository.ChargePointRepository;
 import de.rwth.idsg.steve.repository.TransactionRepository;
 import de.rwth.idsg.steve.repository.dto.Transaction;
+import de.rwth.idsg.steve.repository.dto.TransactionDetails;
+import de.rwth.idsg.steve.service.OcppTagService;
+import de.rwth.idsg.steve.service.TransactionStopService;
+import de.rwth.idsg.steve.web.api.dto.TransactionMetadataResponse;
 import de.rwth.idsg.steve.web.api.ApiControllerAdvice.ApiErrorResponse;
 import de.rwth.idsg.steve.web.dto.TransactionQueryForm;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,6 +63,9 @@ import java.util.List;
 public class TransactionsRestController {
 
     private final TransactionRepository transactionRepository;
+    private final TransactionStopService transactionStopService;
+    private final ChargePointRepository chargePointRepository;
+    private final OcppTagService ocppTagService;
 
     @Operation(description = """
         Returns a list of transactions based on the query parameters.
@@ -80,5 +88,26 @@ public class TransactionsRestController {
         var response = transactionRepository.getTransactions(params);
         log.debug("Read response for query: {}", response);
         return response;
+    }
+
+    @GetMapping("/{transactionPk}")
+    public TransactionDetails getDetails(@PathVariable("transactionPk") int transactionPk) {
+        log.debug("Read transaction details request: {}", transactionPk);
+        return transactionRepository.getDetails(transactionPk);
+    }
+
+    @PostMapping("/{transactionPk}/stop")
+    public TransactionDetails stop(@PathVariable("transactionPk") int transactionPk) {
+        log.debug("Stop transaction request: {}", transactionPk);
+        transactionStopService.stop(transactionPk);
+        return transactionRepository.getDetails(transactionPk);
+    }
+
+    @GetMapping("/metadata")
+    public TransactionMetadataResponse getMetadata() {
+        return new TransactionMetadataResponse(
+            chargePointRepository.getChargeBoxIds(),
+            ocppTagService.getIdTags()
+        );
     }
 }

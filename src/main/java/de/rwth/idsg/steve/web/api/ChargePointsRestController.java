@@ -7,6 +7,7 @@ import de.rwth.idsg.steve.repository.dto.ChargePoint;
 import de.rwth.idsg.steve.repository.dto.ConnectorStatus;
 import de.rwth.idsg.steve.service.ChargePointHelperService;
 import de.rwth.idsg.steve.service.ChargePointRegistrationService;
+import de.rwth.idsg.steve.service.dto.UnidentifiedIncomingObject;
 import de.rwth.idsg.steve.utils.ControllerHelper;
 import de.rwth.idsg.steve.web.api.dto.ChargePointDetailsResponse;
 import de.rwth.idsg.steve.web.api.dto.ChargePointMetadataResponse;
@@ -103,7 +104,7 @@ public class ChargePointsRestController {
 
     @GetMapping("/unknown")
     public List<String> getUnknownChargePoints() {
-        return chargePointRegistrationService.getUnknownChargePoints();
+        return getUnknownChargeBoxIds();
     }
 
     @PostMapping(value = "/unknown", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -139,7 +140,7 @@ public class ChargePointsRestController {
 
     @GetMapping("/metadata")
     public ChargePointMetadataResponse getMetadata() {
-        List<String> unknown = chargePointRegistrationService.getUnknownChargePoints();
+        List<String> unknown = getUnknownChargeBoxIds();
         return new ChargePointMetadataResponse(
             ControllerHelper.COUNTRY_DROPDOWN,
             UP_TO_OCPP15_REGISTRATION_STATUS_LIST,
@@ -165,5 +166,11 @@ public class ChargePointsRestController {
             case V_16 -> OCPP16_REGISTRATION_STATUS_LIST;
             default -> throw new IllegalArgumentException("Unknown OCPP version: " + protocol.getVersion());
         };
+    }
+
+    private List<String> getUnknownChargeBoxIds() {
+        return chargePointRegistrationService.getUnknownChargePoints().stream()
+            .map(UnidentifiedIncomingObject::getKey)
+            .toList();
     }
 }

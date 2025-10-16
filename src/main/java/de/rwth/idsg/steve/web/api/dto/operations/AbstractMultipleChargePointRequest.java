@@ -16,23 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.rwth.idsg.steve.repository;
 
-import de.rwth.idsg.steve.repository.dto.User;
-import de.rwth.idsg.steve.web.dto.UserForm;
-import de.rwth.idsg.steve.web.dto.UserQueryForm;
+package de.rwth.idsg.steve.web.api.dto.operations;
+
+import de.rwth.idsg.steve.repository.dto.ChargePointSelect;
+import de.rwth.idsg.steve.service.ChargePointHelperService;
+import de.rwth.idsg.steve.web.dto.ocpp.MultipleChargePointSelect;
 
 import java.util.List;
 
-/**
- * @author Sevket Goekay <sevketgokay@gmail.com>
- * @since 25.11.2015
- */
-public interface UserRepository {
-    List<User.Overview> getOverview(UserQueryForm form);
-    User.Details getDetails(int userPk);
+public abstract class AbstractMultipleChargePointRequest extends AbstractChargePointSelectionRequest {
 
-    int add(UserForm form);
-    void update(UserForm form);
-    void delete(int userPk);
+    protected void apply(MultipleChargePointSelect params, ChargePointHelperService helperService) {
+        List<ChargePointSelect> chargePoints = resolveChargePoints(helperService);
+        params.setChargePointSelectList(chargePoints);
+    }
 }

@@ -18,8 +18,11 @@
  */
 package de.rwth.idsg.steve.web.api;
 
+import de.rwth.idsg.steve.repository.ChargePointRepository;
 import de.rwth.idsg.steve.repository.TransactionRepository;
 import de.rwth.idsg.steve.repository.dto.Transaction;
+import de.rwth.idsg.steve.service.OcppTagService;
+import de.rwth.idsg.steve.service.TransactionStopService;
 import de.rwth.idsg.steve.web.dto.TransactionQueryForm;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,11 +60,25 @@ public class TransactionRestControllerTest extends AbstractControllerTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private TransactionStopService transactionStopService;
+
+    @Mock
+    private ChargePointRepository chargePointRepository;
+
+    @Mock
+    private OcppTagService ocppTagService;
+
     private MockMvc mockMvc;
 
     @BeforeEach
     public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new TransactionsRestController(transactionRepository))
+        mockMvc = MockMvcBuilders.standaloneSetup(new TransactionsRestController(
+                transactionRepository,
+                transactionStopService,
+                chargePointRepository,
+                ocppTagService
+            ))
             .setControllerAdvice(new ApiControllerAdvice())
             .setMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper))
             .alwaysExpect(content().contentType("application/json"))

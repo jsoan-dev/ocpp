@@ -16,23 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.rwth.idsg.steve.repository;
 
-import de.rwth.idsg.steve.repository.dto.User;
-import de.rwth.idsg.steve.web.dto.UserForm;
-import de.rwth.idsg.steve.web.dto.UserQueryForm;
+package de.rwth.idsg.steve.web.api.dto.operations;
 
-import java.util.List;
+import de.rwth.idsg.steve.service.ChargePointHelperService;
+import de.rwth.idsg.steve.web.dto.ocpp.RemoteStopTransactionParams;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
-/**
- * @author Sevket Goekay <sevketgokay@gmail.com>
- * @since 25.11.2015
- */
-public interface UserRepository {
-    List<User.Overview> getOverview(UserQueryForm form);
-    User.Details getDetails(int userPk);
+@Getter
+@Setter
+public class RemoteStopTransactionRequest extends AbstractSingleChargePointRequest {
 
-    int add(UserForm form);
-    void update(UserForm form);
-    void delete(int userPk);
+    @NotNull(message = "transactionId is required")
+    private Integer transactionId;
+
+    public RemoteStopTransactionParams toParams(ChargePointHelperService helperService) {
+        RemoteStopTransactionParams params = new RemoteStopTransactionParams();
+        params.setTransactionId(transactionId);
+        apply(params, helperService);
+        return params;
+    }
 }

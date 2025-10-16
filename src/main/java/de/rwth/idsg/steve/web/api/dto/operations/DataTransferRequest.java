@@ -16,23 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.rwth.idsg.steve.repository;
 
-import de.rwth.idsg.steve.repository.dto.User;
-import de.rwth.idsg.steve.web.dto.UserForm;
-import de.rwth.idsg.steve.web.dto.UserQueryForm;
+package de.rwth.idsg.steve.web.api.dto.operations;
 
-import java.util.List;
+import de.rwth.idsg.steve.service.ChargePointHelperService;
+import de.rwth.idsg.steve.web.dto.ocpp.DataTransferParams;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
-/**
- * @author Sevket Goekay <sevketgokay@gmail.com>
- * @since 25.11.2015
- */
-public interface UserRepository {
-    List<User.Overview> getOverview(UserQueryForm form);
-    User.Details getDetails(int userPk);
+@Getter
+@Setter
+public class DataTransferRequest extends AbstractMultipleChargePointRequest {
 
-    int add(UserForm form);
-    void update(UserForm form);
-    void delete(int userPk);
+    @NotBlank
+    private String vendorId;
+
+    private String messageId;
+
+    private String data;
+
+    public DataTransferParams toParams(ChargePointHelperService helperService) {
+        DataTransferParams params = new DataTransferParams();
+        params.setVendorId(vendorId);
+        params.setMessageId(messageId);
+        params.setData(data);
+        apply(params, helperService);
+        return params;
+    }
 }

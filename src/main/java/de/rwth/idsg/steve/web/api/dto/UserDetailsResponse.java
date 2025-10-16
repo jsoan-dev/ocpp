@@ -16,23 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.rwth.idsg.steve.repository;
+
+package de.rwth.idsg.steve.web.api.dto;
 
 import de.rwth.idsg.steve.repository.dto.User;
+import de.rwth.idsg.steve.utils.mapper.UserFormMapper;
 import de.rwth.idsg.steve.web.dto.UserForm;
-import de.rwth.idsg.steve.web.dto.UserQueryForm;
+import jooq.steve.db.tables.records.AddressRecord;
+import jooq.steve.db.tables.records.UserRecord;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 
-/**
- * @author Sevket Goekay <sevketgokay@gmail.com>
- * @since 25.11.2015
- */
-public interface UserRepository {
-    List<User.Overview> getOverview(UserQueryForm form);
-    User.Details getDetails(int userPk);
+@Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Accessors(fluent = true)
+public final class UserDetailsResponse {
 
-    int add(UserForm form);
-    void update(UserForm form);
-    void delete(int userPk);
+    private final UserForm form;
+    private final List<String> availableIdTags;
+    private final UserRecord userRecord;
+    private final AddressRecord addressRecord;
+
+    public static UserDetailsResponse of(User.Details details, List<String> availableIdTags) {
+        UserForm form = UserFormMapper.toForm(details);
+        return new UserDetailsResponse(form, availableIdTags, details.getUserRecord(), details.getAddress());
+    }
 }
